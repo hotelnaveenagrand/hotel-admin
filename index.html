@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Admin — Hotel Naveena Grand Room Status</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
 <script>
   var pass = prompt("Enter Admin Password:");
   if (pass !== "Naveena123") {
@@ -149,6 +150,20 @@
   button{font-size:16px;padding:14px;border-radius:12px}
   .controls input, .controls button{font-size:16px;padding:14px}
 }
+/* --- Mobile-friendly summary cards (FINAL CLEAN VERSION) --- */
+@media(max-width:768px){
+  .right{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%}
+  .count-card{padding:10px;border-radius:12px}
+  .count-card div:first-child{font-size:14px}
+  .count-card div:last-child{font-size:18px;font-weight:700}
+}
+
+@media(max-width:480px){
+  .right{grid-template-columns:repeat(2,1fr);gap:8px}
+  .count-card{padding:8px}
+  .count-card div:first-child{font-size:13px}
+  .count-card div:last-child{font-size:16px}
+}
 </style>
 </head>
 
@@ -183,7 +198,7 @@
       <button id="resetBtn" class="btn-ghost" style="margin-top:10px;width:100%">Reset</button>
       <button id="exportBtn" class="btn-ghost" style="margin-top:10px;width:100%">Export CSV</button>
 
-     
+      
     </aside>
   </div>
 </div>
