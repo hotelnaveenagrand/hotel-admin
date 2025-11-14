@@ -7,10 +7,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <script>
   var pass = prompt("Enter Admin Password:");
-  if(pass !== "Naveena123"){
-     document.write("Access Denied");
+  if (pass !== "Naveena123") {
+    document.write("<h2 style='text-align:center;margin-top:40px;color:red;'>Access Denied</h2>");
+    setTimeout(()=>{ window.location.href = "/"; }, 2000);
   }
 </script>
+
 
 
   
