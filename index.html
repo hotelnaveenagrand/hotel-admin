@@ -169,7 +169,7 @@ function buildTabs(){
   floors.forEach(f=>{
     const tab = document.createElement('div');
     tab.className = 'tab' + (f===activeFloor? ' active':'');
-    tab.textContent = f + '00s';
+    tab.textContent = f + '000s';
     tab.onclick = ()=>{ activeFloor = f; render(); };
     floorTabs.appendChild(tab);
   });
