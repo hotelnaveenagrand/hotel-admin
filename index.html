@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Admin — Hotel Naveena Grand Room Status</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
 <script>
   var pass = prompt("Enter Admin Password:");
   if (pass !== "Naveena123") {
@@ -13,6 +12,7 @@
     setTimeout(()=>{ window.location.href = "/"; }, 1);
   }
 </script>
+
   
 <style>
   :root{
@@ -32,7 +32,8 @@
   .btn-ghost{background:#fff;border:1px solid var(--border);color:#111}
   .layout{display:flex;gap:16px;margin-top:16px}
   .left{flex:1}
-  .right{width:320px}
+  .right{width:320px;display:grid;grid-template-columns:1fr;gap:8px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .floor-tabs{display:flex;gap:8px;margin-bottom:12px}
   .tab{padding:8px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:#fff}
   .tab.active{background:linear-gradient(90deg,var(--accent),#fff3d6)}
@@ -48,7 +49,12 @@
   input[type="text"], input[type="password"]{padding:8px;border-radius:8px;border:1px solid var(--border)}
   .note{font-size:13px;color:var(--muted);margin-top:10px}
 /* MOBILE OVERRIDES START */
-@media(max-width:768px){(max-width:768px){
+@media(max-width:768px){
+  .summary{grid-template-columns:repeat(2,1fr);gap:6px}
+  .count-card{padding:8px}
+  .count-card div{font-size:14px}
+  .count-card div:last-child{font-size:18px}
+(max-width:768px){
   body{padding:10px}
   header{flex-direction:column;align-items:flex-start;gap:10px}
   .controls{flex-wrap:wrap;width:100%}
@@ -177,7 +183,7 @@
       <button id="resetBtn" class="btn-ghost" style="margin-top:10px;width:100%">Reset</button>
       <button id="exportBtn" class="btn-ghost" style="margin-top:10px;width:100%">Export CSV</button>
 
-      <div class="note">Note: Keep this file private. Do not upload to GitHub Pages.</div>
+     
     </aside>
   </div>
 </div>
