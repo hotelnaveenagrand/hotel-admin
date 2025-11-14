@@ -257,7 +257,8 @@ saveBtn.onclick = async ()=>{
 };
 
 // RESET
-resetBtn.onclick = async ()=>{
+ /*
+  resetBtn.onclick = async ()=>{
   if(!isAuthenticated){ alert('Sign in as admin to reset'); return; }
   if(!confirm('Reset all rooms to Vacant & Cleaned?')) return;
   floors.forEach(f=>{ Object.keys(data[f]).forEach(rn=> data[f][rn] = 'vacant_cleaned'); });
@@ -269,7 +270,8 @@ resetBtn.onclick = async ()=>{
     if(error) alert('Reset DB failed: ' + error.message);
     else alert('Reset done');
   }catch(e){ console.error('Reset exception', e); alert('Reset error'); }
-};
+}; 
+*/
 
 // EXPORT CSV
 exportBtn.onclick = ()=>{
