@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin — Hotel Naveena Grand Room Status</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+
+  <script>
+  var pass = prompt("Enter Admin Password:");
+  if(pass !== "Naveena123"){
+     document.write("Access Denied");
+  }
+</script>
+
+<style>
+  :root{
+    --bg:#f4f6f8; --card:#ffffff; --muted:#6b7280;
+    --occupied:#e8f7ed; --vacant_cleaned:#eef2ff; --vacant_dirty:#fff1f2; --blocked:#fff7ed;
+    --accent:#f7d774; --border:#e6e9ee;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;padding:20px}
+  .app{max-width:1150px;margin:0 auto;background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--border)}
+  header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+  h1{margin:0;font-size:20px}
+  .meta{color:var(--muted);font-size:13px}
+  .controls{display:flex;gap:8px;align-items:center}
+  button{padding:8px 12px;border-radius:8px;border:0;cursor:pointer;font-weight:600}
+  .btn-primary{background:#0b5fff;color:#fff}
+  .btn-ghost{background:#fff;border:1px solid var(--border);color:#111}
+  .layout{display:flex;gap:16px;margin-top:16px}
+  .left{flex:1}
+  .right{width:320px}
+  .floor-tabs{display:flex;gap:8px;margin-bottom:12px}
+  .tab{padding:8px 12px;border-radius:8px;border:1px solid var(--border);cursor:pointer;background:#fff}
+  .tab.active{background:linear-gradient(90deg,var(--accent),#fff3d6)}
+  .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .room{background:#fff;border-radius:8px;border:1px solid var(--border);min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:8px;transition:.1s}
+  .room:hover{transform:scale(1.03)}
+  .room .num{font-weight:700;margin-bottom:6px}
+  .room.occupied{background:var(--occupied)}
+  .room.vacant_cleaned{background:var(--vacant_cleaned)}
+  .room.vacant_dirty{background:var(--vacant_dirty)}
+  .room.blocked{background:var(--blocked)}
+  .count-card{background:#fff;padding:10px;border-radius:8px;border:1px solid var(--border);text-align:center;margin-bottom:8px}
+  input[type="text"], input[type="password"]{padding:8px;border-radius:8px;border:1px solid var(--border)}
+  .note{font-size:13px;color:var(--muted);margin-top:10px}
+</style>
+</head>
+
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>Admin — Hotel Naveena Grand</h1>
+      <div class="meta">Edit room statuses (Admin only)</div>
+    </div>
+    <div class="controls">
+      <input id="email" type="text" value="grandhotelnaveena@gmail.com" />
+      <input id="password" type="password" placeholder="Password" />
+      <button id="signInBtn" class="btn-primary">Sign in</button>
+      <button id="signOutBtn" class="btn-ghost" style="display:none">Sign out</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <div class="left">
+      <div class="floor-tabs" id="floorTabs"></div>
+      <div class="grid" id="roomsGrid"></div>
+    </div>
+
+    <aside class="right">
+      <div class="count-card"><div>Occupied</div><div id="cOcc" style="font-weight:800;font-size:20px">0</div></div>
+      <div class="count-card"><div>Vacant &amp; Cleaned</div><div id="cClean" style="font-weight:800;font-size:20px">0</div></div>
+      <div class="count-card"><div>Vacant &amp; Dirty</div><div id="cDirty" style="font-weight:800;font-size:20px">0</div></div>
+      <div class="count-card"><div>Blocked</div><div id="cBlocked" style="font-weight:800;font-size:20px">0</div></div>
+
+      <button id="saveBtn" class="btn-primary" style="margin-top:10px;width:100%">Save</button>
+      <button id="resetBtn" class="btn-ghost" style="margin-top:10px;width:100%">Reset</button>
+      <button id="exportBtn" class="btn-ghost" style="margin-top:10px;width:100%">Export CSV</button>
+
+      <div class="note">Note: Keep this file private. Do not upload to GitHub Pages.</div>
+    </aside>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js/dist/umd/supabase.min.js"></script>
+<script>
+// Configuration
+const SUPABASE_URL = "https://jaklizxkcmytzjshxnxk.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impha2xpenhrY215dHpqc2h4bnhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMTgzMTcsImV4cCI6MjA3ODY5NDMxN30.nyxO9VdMr-nIz0PvoVWqgh8tTeDLMf8rIilMDbGsj-w";
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const floors=[1,2,3];
+const roomsPerFloor=15;
+const statusOrder=['vacant_cleaned','vacant_dirty','occupied','blocked'];
+let data={};
+let activeFloor=1;
+let isAuthenticated=false;
+
+// DOM
+const floorTabs=document.getElementById('floorTabs');
+const roomsGrid=document.getElementById('roomsGrid');
+const emailInput=document.getElementById('email');
+const pwdInput=document.getElementById('password');
+const signInBtn=document.getElementById('signInBtn');
+const signOutBtn=document.getElementById('signOutBtn');
+const saveBtn=document.getElementById('saveBtn');
+const resetBtn=document.getElementById('resetBtn');
+const exportBtn=document.getElementById('exportBtn');
+
+// Initialize data structure (in case DB empty)
+function initLocal(){
+  data = {};
+  floors.forEach(f=>{ data[f] = {}; const start = f*100 + 1; for(let i=0;i<roomsPerFloor;i++){ data[f][start+i] = 'vacant_cleaned'; } });
+}
+
+async function loadFromDB(){
+  try{
+    const { data: rooms, error } = await supabase.from('rooms').select('*').order('floor',{ascending:true}).order('room',{ascending:true});
+    if(error){ console.error('Load error', error); initLocal(); render(); return; }
+    if(!rooms || rooms.length===0){ initLocal(); render(); return; }
+    // populate
+    data = {};
+    floors.forEach(f=>data[f]={});
+    rooms.forEach(r=>{ data[r.floor][r.room] = r.status; });
+    render();
+  }catch(e){ console.error('Exception loading', e); initLocal(); render(); }
+}
+
+function buildTabs(){
+  floorTabs.innerHTML='';
+  floors.forEach(f=>{
+    const tab = document.createElement('div');
+    tab.className = 'tab' + (f===activeFloor? ' active':'');
+    tab.textContent = f + '00s';
+    tab.onclick = ()=>{ activeFloor = f; render(); };
+    floorTabs.appendChild(tab);
+  });
+}
+
+function render(){
+  buildTabs();
+  roomsGrid.innerHTML='';
+  const rooms = Object.keys(data[activeFloor]).map(Number).sort((a,b)=>a-b);
+  rooms.forEach(room =>{
+    const st = data[activeFloor][room];
+    const div = document.createElement('div');
+    div.className = `room ${st}`;
+    div.innerHTML = `<div class='num'>${room}</div><div>${(st||'').replace(/_/g,' ').toUpperCase()}</div>`;
+    div.onclick = ()=>{
+      if(!isAuthenticated){ alert('Please sign in as admin to edit'); return; }
+      cycle(activeFloor, room);
+    };
+    roomsGrid.appendChild(div);
+  });
+  refreshCounts();
+}
+
+function cycle(f,r){
+  const cur = data[f][r];
+  const idx = statusOrder.indexOf(cur);
+  const next = statusOrder[(idx+1)%statusOrder.length];
+  data[f][r] = next;
+  render();
+}
+
+function refreshCounts(){
+  let occ=0, clean=0, dirty=0, blocked=0;
+  floors.forEach(f=>{
+    Object.values(data[f]).forEach(s=>{
+      if(s==='occupied') occ++;
+      else if(s==='vacant_cleaned') clean++;
+      else if(s==='vacant_dirty') dirty++;
+      else if(s==='blocked') blocked++;
+    });
+  });
+  document.getElementById('cOcc').textContent = occ;
+  document.getElementById('cClean').textContent = clean;
+  document.getElementById('cDirty').textContent = dirty;
+  document.getElementById('cBlocked').textContent = blocked;
+}
+
+// AUTH
+signInBtn.onclick = async ()=>{
+  const email = emailInput.value.trim();
+  const password = pwdInput.value;
+  if(!email || !password){ alert('Enter email and password'); return; }
+  try{
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if(error){ alert('Sign in failed: ' + error.message); console.error(error); return; }
+    // success
+    isAuthenticated = true;
+    emailInput.style.display='none'; pwdInput.style.display='none'; signInBtn.style.display='none'; signOutBtn.style.display='inline-block';
+    await loadFromDB();
+    alert('Signed in');
+  }catch(e){ console.error('Sign in exception', e); alert('Sign in error'); }
+};
+
+signOutBtn.onclick = async ()=>{
+  await supabase.auth.signOut();
+  isAuthenticated = false;
+  emailInput.style.display='inline-block'; pwdInput.style.display='inline-block'; signInBtn.style.display='inline-block'; signOutBtn.style.display='none';
+  initLocal(); render();
+};
+
+// SAVE - upsert all rows (requires admin)
+saveBtn.onclick = async ()=>{
+  if(!isAuthenticated){ alert('Sign in as admin to save'); return; }
+  try{
+    const rows = [];
+    floors.forEach(f=>{
+      Object.keys(data[f]).forEach(rn=>{
+        rows.push({ floor: f, room: Number(rn), status: data[f][rn] });
+      });
+    });
+    const { error } = await supabase.from('rooms').upsert(rows, { onConflict: ['floor','room'] });
+    if(error){ alert('Save failed: ' + error.message); console.error(error); return; }
+    alert('Saved successfully');
+  }catch(e){ console.error('Save exception', e); alert('Save error'); }
+};
+
+// RESET
+resetBtn.onclick = async ()=>{
+  if(!isAuthenticated){ alert('Sign in as admin to reset'); return; }
+  if(!confirm('Reset all rooms to Vacant & Cleaned?')) return;
+  floors.forEach(f=>{ Object.keys(data[f]).forEach(rn=> data[f][rn] = 'vacant_cleaned'); });
+  render();
+  try{
+    const rows = [];
+    floors.forEach(f=>{ Object.keys(data[f]).forEach(rn=> rows.push({ floor: f, room: Number(rn), status: 'vacant_cleaned' })); });
+    const { error } = await supabase.from('rooms').upsert(rows, { onConflict: ['floor','room'] });
+    if(error) alert('Reset DB failed: ' + error.message);
+    else alert('Reset done');
+  }catch(e){ console.error('Reset exception', e); alert('Reset error'); }
+};
+
+// EXPORT CSV
+exportBtn.onclick = ()=>{
+  const rows = ['Floor,Room,Status'];
+  floors.forEach(f=>{
+    Object.keys(data[f]).map(Number).sort((a,b)=>a-b).forEach(rn=> rows.push(`${f},${rn},${data[f][rn]}`));
+  });
+  const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'rooms_status.csv'; a.click(); URL.revokeObjectURL(a.href);
+};
+
+// Init
+initLocal(); loadFromDB();
+
+</script>
+</body>
+</html>
